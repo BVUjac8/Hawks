@@ -9,7 +9,7 @@ A data analysis of a data set called hawks.
 5. [FAQs](#faqs)
 ### General Info
 ***
-
+Determining which species of hawks grew to maturity, migrated south in the month of November, & has a lengthier hallux as well as does the time of capture have anything to do with the maturity of a species of hawks
 ### Hawks
 ![Hakws](https://i.pinimg.com/736x/ec/54/87/ec548724c72a34e3d1969df7a603721a.jpg)
 ### Technologies
@@ -25,8 +25,8 @@ A data analysis of a data set called hawks.
 R & R Studio should be downloaded from website, all others should be standardly included.
 ### Collaboration
 ***
-No collaboration upon this project.
+No collaboration can be made on this project
 ### FAQs
 ***
 1. **Why is a data analysis of a data set called hawks important to perform?**
-_ _
+_Determining which species of hawks grew to maturity, migrated south in the month of November, & has a lengthier hallux as well as does the time of capture have anything to do with the maturity of a species of hawks is unique to know which species of hawks reached adulthood, participated in migration, has a lengthier killing talon plus does the maturity of a species of hawks have anything to do with capture rate could protect the three different species of hawks against animal predators or human hunters._
