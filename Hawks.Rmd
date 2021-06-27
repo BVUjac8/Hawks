@@ -1,0 +1,299 @@
+---
+title: "Project-Hawks"
+author: "Julia Cuellar"
+date: '2021-7-4'
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## EDA
+```{r eval = TRUE, echo = FALSE, warning = FALSE, message = FALSE}
+library(knitr)
+library(latexpdf)
+library(tinytex)
+library(dplyr)
+library(tidyverse)
+library(cluster)
+library(hrbrthemes)
+library(NbClust)
+library(factoextra)
+library(ggplot2)
+setwd("C:/Users/jcuel/Videos/Bellevue/Summer 2021/Professor Williams/Projects/Project 1")
+hawk_df = read.csv("Hawks.csv")
+```
+
+**Hawks Data:**
+```{r eval = TRUE, echo = FALSE}
+head(hawk_df)
+```
+
+**Summary of Hawks Data:**
+```{r eval = TRUE, echo = FALSE}
+summary(hawk_df)
+```
+
+```{r eval = TRUE, echo = FALSE}
+hawk_df = hawk_df %>% select(-X)
+hawk_df = hawk_df[ , names(hawk_df) %in% c("Month", "Year", "CaptureTime", "BandNumber", "Species", "Age", "Wing", "Weight", "Culmen", "Hallux", "Tail", "StandardTail", "Tarsus")]
+```
+
+**Display nulls of Hawks Data:**
+```{r eval = TRUE, echo = FALSE}
+is.null(hawk_df)
+```
+
+**Display NA's of Hawks Data:**
+```{r eval = TRUE, echo = FALSE}
+sum(is.na(hawk_df$Month))
+sum(is.na(hawk_df$CaptureTime))
+sum(is.na(hawk_df$Species))
+sum(is.na(hawk_df$Age))
+sum(is.na(hawk_df$Hallux))
+```
+
+**Redisplay NA's of Hallux:**
+```{r eval = TRUE, echo = FALSE}
+hawk_df = replace_na(hawk_df, list(`Hallux` = mean(hawk_df$'Hallux', na.rm = TRUE)))
+sum(is.na(hawk_df$Hallux))
+```
+
+**Redisplay Hawks Data:**
+```{r eval = TRUE, echo = FALSE}
+head(hawk_df)
+```
+
+**Project Month plot:**
+
+```{r eval = TRUE, echo = FALSE}
+month_plot = hist(hawk_df$Month, main = 'Month', xlab = 'month', ylab = "Frequency", col = c("yellow", "orange", "brown", "red"))
+```
+
+**Project Species plot:**
+
+```{r eval = TRUE, echo = FALSE}
+cp_plot = ggplot(hawk_df, aes(x = Month, y = CaptureTime)) + geom_line() + labs(title = "Capture Time")
+species_plot = barplot(table(hawk_df$Species), main = "Species", xlab = "species", ylab = "Count", col = c("orange", "red", "brown"), legend = c("CH", "RT", "SS"))
+text(species_plot, 0, round(table(hawk_df$Species), 1), cex = 1, pos = 3)
+```
+
+**Project Age plot:**
+
+```{r eval = TRUE, echo = FALSE}
+age_plot = barplot(table(hawk_df$Age), main = "Age", xlab = "age", ylab = "Count", col = c("pink", "blue"), legend = c("A", "I"))
+text(age_plot, 0, round(table(hawk_df$Age), 1), cex = 1, pos = 3)
+```
+
+**Project Hallux plot:**
+
+```{r eval = TRUE, echo = FALSE}
+boxplot(hawk_df$Hallux, main = 'Hallux', xlab = 'hallux', col = 'purple')
+```
+
+
+## Cluster Model of the Species of Hawks for Age
+```{r eval = TRUE, echo = FALSE}
+library(dplyr)
+library(tidyverse)
+setwd("C:/Users/jcuel/Videos/Bellevue/Summer 2021/Professor Williams/Projects/Project 1")
+hawk_df = read.csv("Hawks.csv")
+hawk_df = hawk_df %>% select(-X)
+hawk_df = hawk_df[ , names(hawk_df) %in% c("Month", "Year", "CaptureTime", "BandNumber", "Species", "Age", "Wing", "Weight", "Culmen", "Hallux", "Tail", "StandardTail", "Tarsus")]
+hawk_df = replace_na(hawk_df, list(`Hallux` = mean(hawk_df$'Hallux', na.rm = TRUE)))
+```
+
+**Cross table of Species of Hawks vs Age:**
+
+```{r eval = TRUE, echo = FALSE}
+adult = subset(hawk_df, Age == "A")
+adult_ch = subset(adult, Species == "CH")
+adult_rt = subset(adult, Species == "RT")
+adult_ss = subset(adult, Species == "SS")
+imma = subset(hawk_df, Age == "I")
+imma_ch = subset(imma, Species == "CH")
+imma_rt = subset(imma, Species == "RT")
+imma_ss = subset(imma, Species == "SS")
+```
+
+Species       | Adult | Immature | **Total**
+------------- | ----- | -------- | -------
+Cooper's      |  32   |  38      |  70
+Red-tailed    |  123  |  454     |  577
+Sharp-shinned |  69   |  192     |  261
+------------- | ----- | -------- | -------
+**Total**     |  224  | 684      | 908
+
+## Cluster Model of the Species of Hawks for Month
+```{r eval = TRUE, echo = FALSE, warning = FALSE}
+library(dplyr)
+library(tidyverse)
+setwd("C:/Users/jcuel/Videos/Bellevue/Summer 2021/Professor Williams/Projects/Project 1")
+hawk_df = read.csv("Hawks.csv")
+hawk_df = hawk_df %>% select(-X)
+hawk_df = hawk_df[ , names(hawk_df) %in% c("Month", "Year", "CaptureTime", "BandNumber", "Species", "Age", "Wing", "Weight", "Culmen", "Hallux", "Tail", "StandardTail", "Tarsus")]
+hawk_df = replace_na(hawk_df, list(`Hallux` = mean(hawk_df$'Hallux', na.rm = TRUE)))
+month_df = hawk_df$Month
+month_df = data.frame(month_df)
+```
+
+**Exhibit Dissimilarity Matrix for Month:**
+
+```{r eval = TRUE, echo = FALSE}
+library(cluster)
+library(hrbrthemes)
+library(NbClust)
+library(factoextra)
+dist_month = daisy(month_df, metric = "gower")
+month_gradient_color = list(low = "chocolate1",  high = "white")
+fviz_dist(dist_month, gradient = month_gradient_color, order = T)
+```
+
+**Display # of clusters for Month:**
+
+```{r eval = TRUE, echo = FALSE, warning = FALSE}
+num_clust_month = NbClust(diss = dist_month, distance = NULL, min.nc = 2, max.nc = 5, method = "median", index = "silhouette")
+num_clust_month$Best.nc
+```
+
+**Project MDS plot for Month:**
+
+```{r eval = TRUE, echo = FALSE, warning = FALSE}
+library(ggplot2)
+month_pam = pam(dist_month, 4)
+month_mds = as.data.frame(cmdscale(dist_month, 2))
+month_mds$num_clust_month = as.factor(month_pam$clustering)
+ggplot(month_mds, aes(x = V1, y = V2, color = num_clust_month)) + geom_point() + theme_ipsum() + labs(title = "MDS plot for Month", subtitle = "Colored by PAM cluster") + scale_color_brewer(palette = "Set1")
+```
+
+**Project Species & PAM Cluster for Month:**
+
+```{r eval = TRUE, echo = FALSE, warning = FALSE}
+hawk_df$Species = as.factor(month_mds$num_clust_month)
+ggplot(hawk_df, aes(x = Species)) + geom_bar(stat = "count", position = "dodge", width = 0.7) + theme_ipsum(grid = "Y") + scale_fill_brewer(palette = "Set2") + labs(title = "Species and PAM cluster", subtitle = "for Month") + xlab("Month") + ylab("count")
+```
+
+**Cross table of Species of Hawks vs Month:**
+```{r eval = TRUE, echo = FALSE}
+library(dplyr)
+library(tidyverse)
+setwd("C:/Users/jcuel/Videos/Bellevue/Summer 2021/Professor Williams/Projects/Project 1")
+hawk_df = read.csv("Hawks.csv")
+hawk_df = hawk_df %>% select(-X)
+hawk_df = hawk_df[ , names(hawk_df) %in% c("Month", "Year", "CaptureTime", "BandNumber", "Species", "Age", "Wing", "Weight", "Culmen", "Hallux", "Tail", "StandardTail", "Tarsus")]
+hawk_df = replace_na(hawk_df, list(`Hallux` = mean(hawk_df$'Hallux', na.rm = TRUE)))
+aug = subset(hawk_df, Month == 8)
+aug_ch = subset(aug, Species == "CH")
+aug_rt = subset(aug, Species == "RT")
+aug_ss = subset(aug, Species == "SS")
+sept = subset(hawk_df, Month == 9)
+sept_ch = subset(sept, Species == "CH")
+sept_rt = subset(sept, Species == "RT")
+sept_ss = subset(sept, Species == "SS")
+oct = subset(hawk_df, Month == 10)
+oct_ch = subset(oct, Species == "CH")
+oct_rt = subset(oct, Species == "RT")
+oct_ss = subset(oct, Species == "SS")
+nov = subset(hawk_df, Month == 11)
+nov_ch = subset(nov, Species == "CH")
+nov_rt = subset(nov, Species == "RT")
+nov_ss = subset(nov, Species == "SS")
+```
+
+Species       | August | September | October | November | **Total**
+------------- | ------ | --------- | ------- | -------- | --------
+Cooper's      |  0     |  31       |  34     |  5       | 70
+Red-tailed    |  1     |  150      |  314    |  112     | 577
+Sharp-shinned |  0     |  112      |  114    |  35      | 261
+------------- | ------ | --------- | ------- | -------- | --------
+**Total**     |  1     |  293      |  462    |  152     | 908
+
+## Cluster Model of the Species of Hawks for Hallux
+```{r eval = TRUE, echo = FALSE}
+library(dplyr)
+library(tidyverse)
+setwd("C:/Users/jcuel/Videos/Bellevue/Summer 2021/Professor Williams/Projects/Project 1")
+hawk_df = read.csv("Hawks.csv")
+hawk_df = hawk_df %>% select(-X)
+hawk_df = hawk_df[ , names(hawk_df) %in% c("Month", "Year", "CaptureTime", "BandNumber", "Species", "Age", "Wing", "Weight", "Culmen", "Hallux", "Tail", "StandardTail", "Tarsus")]
+hawk_df = replace_na(hawk_df, list(`Hallux` = mean(hawk_df$'Hallux', na.rm = TRUE)))
+hallux_df = hawk_df$Hallux
+hallux_df = data.frame(hallux_df)
+```
+
+**Exhibit Dissimilarity Matrix for Hallux:**
+
+```{r eval = TRUE, echo = FALSE}
+library(cluster)
+library(hrbrthemes)
+library(NbClust)
+library(factoextra)
+dist_hallux = daisy(hallux_df, metric = "gower")
+hallux_gradient_color = list(low = "thistle2",  high = "white")
+fviz_dist(dist_hallux, gradient = hallux_gradient_color, order = T)
+```
+
+**Display # of clusters for Hallux:**
+
+```{r eval = TRUE, echo = FALSE, warning = FALSE}
+num_clust_hallux = NbClust(diss = dist_hallux, distance = NULL, min.nc = 2, max.nc = 15, method = "median", index = "silhouette")
+num_clust_hallux$Best.nc
+```
+
+**Project MDS plot for Hallux:**
+
+```{r eval = TRUE, echo = FALSE, warning = FALSE}
+library(ggplot2)
+hallux_pam = pam(dist_hallux, 2)
+hallux_mds = as.data.frame(cmdscale(dist_hallux, 2))
+hallux_mds$num_clust_hallux = as.factor(hallux_pam$clustering)
+ggplot(hallux_mds, aes(x = V1, y = V2, color = num_clust_hallux)) + geom_point() + theme_ipsum() + labs(title = "MDS plot for Hallux", subtitle = "Colored by PAM cluster") + scale_color_brewer(palette = "Set1")
+```
+
+**Project Species & PAM Cluster for Hallux:**
+
+```{r eval = TRUE, echo = FALSE, warning = FALSE}
+hawk_df$Species = as.factor(hallux_mds$num_clust_hallux)
+ggplot(hawk_df, aes(x = Species)) + geom_bar(stat = "count", position = "dodge", width = 0.7) + theme_ipsum(grid = "Y") + scale_fill_brewer(palette = "Set2") + labs(title = "Species and PAM cluster", subtitle = "for Hallux") + xlab("Hallux") + ylab("count")
+```
+
+**Cross table of Species of Hawks vs Hallux:**
+```{r eval = TRUE, echo = FALSE}
+library(dplyr)
+library(tidyverse)
+setwd("C:/Users/jcuel/Videos/Bellevue/Summer 2021/Professor Williams/Projects/Project 1")
+hawk_df = read.csv("Hawks.csv")
+hawk_df = hawk_df %>% select(-X)
+hawk_df = hawk_df[ , names(hawk_df) %in% c("Month", "Year", "CaptureTime", "BandNumber", "Species", "Age", "Wing", "Weight", "Culmen", "Hallux", "Tail", "StandardTail", "Tarsus")]
+hawk_df = replace_na(hawk_df, list(`Hallux` = mean(hawk_df$'Hallux', na.rm = TRUE)))
+ch = subset(hawk_df, Species == "CH")
+rt = subset(hawk_df, Species == "RT")
+ss = subset(hawk_df, Species == "SS")
+avg_ch = mean(ch$Hallux)
+avg_rt = mean(rt$Hallux)
+avg_ss = mean(ss$Hallux)
+```
+
+Species       | Hallux Avg
+------------- | ----------
+Cooper's      |  22.82      
+Red-tailed    |  31.96       
+Sharp-shinned |  15.10        
+
+## Regression Model of the Capture Time vs the Age of Species of Hawks
+```{r eval = TRUE, echo = FALSE, warning = FALSE}
+setwd("C:/Users/jcuel/Videos/Bellevue/Summer 2021/Professor Williams/Projects/Project 1")
+hawk_df = read.csv("Hawks.csv")
+hawk_df = hawk_df %>% select(-X)
+hawk_df = hawk_df[ , names(hawk_df) %in% c("Month", "Year", "CaptureTime", "BandNumber", "Species", "Age", "Wing", "Weight", "Culmen", "Hallux", "Tail", "StandardTail", "Tarsus")]
+hawk_df = replace_na(hawk_df, list(`Hallux` = mean(hawk_df$'Hallux', na.rm = TRUE)))
+tab_ct_sp_age = table(hawk_df$CaptureTime, hawk_df$Species, hawk_df$Age)
+reg_mod1 = lm(Hallux ~ CaptureTime + Species + Age, data = hawk_df)
+sum_ct_sp_age = summary(reg_mod1)
+cfint_ct_sp_age = confint(reg_mod1)
+plot(reg_mod1)
+```
